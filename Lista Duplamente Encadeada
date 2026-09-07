@@ -45,7 +45,7 @@ void buscar() {
 	printf("Digite o valor a ser buscado: ");
 	scanf("%d", &valor);
 	Nos *atual = inicio;
-	int posicao = 0;
+	int posicao = 1;
 	while (atual != NULL) {
 		if (atual->valor == valor) {
 			printf("Valor %d encontrado na posição %d\n", valor, posicao);
