@@ -186,14 +186,13 @@ void imprimeLista() {
 	atual = inicio;
 	while(atual){
 		printf("%d",atual->valor);
-		printf(" ponteiro anterior %d",atual->anterior);
-		printf(" proximo ponteiro %d\n",atual->proximo);
+		printf(" ponteiro anterior %p",(void*)atual->anterior);
+		printf(" proximo ponteiro %p\n",(void*)atual->proximo);
 		atual=atual->proximo;
 	}
 }
 void menu() {
 	int opcao, valor, posicao;
-	criaLista();
 	do {
 		printf("\nMenu:\n");
 		printf("1. Inserir no início\n");
