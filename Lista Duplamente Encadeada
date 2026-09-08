@@ -24,13 +24,13 @@ void buscar();
 void removePosicao(int posicao);
 void menu();
 
-//Criar 2 elemmentos nulos na lista
+//Criar 2 elementos nulos na lista
 void criaLista() {
 	inicio = NULL;
 	fim = NULL;
 	tamanho = 0;
 }
-//Alocar um dado, e como funciona o esquema do lista duplamente encadeada:
+//Alocar um dado
 Nos *aloca(int valor) {
 	Nos *novo = (Nos*)malloc(sizeof(Nos));
 	//um atalho mais limpo para: (*novo).valor
@@ -67,7 +67,7 @@ void insereInicio(int valor) {
 
 	//Se a lista já tiver dado se cria outro no e aponta o ant para o dado 2 e prox do dado 2 para o 1
 	}else{
-		Nos *atual; //criar novo no caso tenha dado no inicio da lista
+		Nos *atual;
 		atual = inicio;
 		novo->proximo = atual;
 		atual->anterior = novo;
@@ -85,7 +85,7 @@ void insereFim(int valor) {
 		fim=novo;
 	//Se a lista já tiver dado se cria outro no e aponta o ant para o dado 2 e prox do dado 2 para o 1
 	}else{
-		Nos *atual; //criar novo no caso tenha dado no inicio da lista
+		Nos *atual;
 		atual = fim;
 		novo->anterior = atual;
 		atual->proximo = novo;
@@ -100,7 +100,7 @@ void inserePosicao(int valor, int posicao) {
 	Nos *atual;
 	int i;
 
-	// Decidindo o ponto de incio
+	// Decidindo o ponto de incio, pra saber se ele começa a "varrer" do inicio ou do fim
 	if (posicao < (tamanho/2)) {
 		atual = inicio;
 		i = 0;
@@ -153,15 +153,15 @@ void removePosicao(int posicao) {
 	}
 
 	// Percorrer para encontrar a posição
-	while ((i != posicao) && (i >= 0) && (i < tamanho)) {
-		if (i < posicao) {
-			i++;
-			atual = atual->proximo;
-		} else if (i > posicao) {
-			i--;
-			atual = atual->anterior;
+		while ((i != posicao) && (i >= 0) && (i < tamanho)) {
+			if (i < posicao) {
+				i++;
+				atual = atual->proximo;
+			} else if (i > posicao) {
+				i--;
+				atual = atual->anterior;
+			}
 		}
-	}
 
 	if (atual != NULL) {
 		if (atual->anterior != NULL) {
@@ -179,17 +179,23 @@ void removePosicao(int posicao) {
 		free(atual);
 		tamanho--;
 	}
+	printf("Elemento não encontrado.\n");
+	return;
 }
 //Função para imprimir a lista:
 void imprimeLista() {
 	Nos *atual;
 	atual = inicio;
-	while(atual){
-		printf("%d",atual->valor);
-		printf(" ponteiro anterior %p",(void*)atual->anterior);
-		printf(" proximo ponteiro %p\n",(void*)atual->proximo);
-		atual=atual->proximo;
+	if(atual != NULL){
+		while(atual){
+			printf("%d",atual->valor);
+			printf(" ponteiro anterior %d",atual->anterior);
+			printf(" proximo ponteiro %d\n",atual->proximo);
+			atual=atual->proximo;
+		}
 	}
+	printf("Lista não encontrada.\n");
+	return;
 }
 void menu() {
 	int opcao, valor, posicao;
