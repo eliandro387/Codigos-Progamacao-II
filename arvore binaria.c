@@ -11,6 +11,7 @@ typedef struct No {
 // Protótipos das funções
 No* criarNo(int valor);
 No* inserir(No* raiz, int valor);
+No* remover(No* raiz, int valor);
 No* buscar(No* raiz, int valor);
 void preOrdem(No* raiz);
 void emOrdem(No* raiz);
@@ -22,7 +23,7 @@ void menu();
 No* criarNo(int valor) {
     No* novoNo = (No*)malloc(sizeof(No));
     if (novoNo == NULL) {
-        printf("Erro de alocação de memória!\n");
+        printf("Erro de alocação de memoria!\n");
         exit(1);
     }
     novoNo->valor = valor;
@@ -42,9 +43,51 @@ No* inserir(No* raiz, int valor) {
     } else if (valor > raiz->valor) {
         raiz->direita = inserir(raiz->direita, valor);
     } else {
-        printf("Valor %d já existe na árvore. Ignorado.\n", valor);
+        printf("Valor %d ja existe na arvore. Ignorado.\n", valor);
     }
     return raiz;
+}
+
+//Função para remover um elemento
+No* remover(No* raiz, int valor){
+    No* pai = raiz;
+	
+	while (raiz != NULL && raiz->valor != valor){
+		pai = raiz;
+		if (valor > raiz->valor) raiz = raiz->direita;
+		else raiz = raiz->esquerda;
+	}
+	
+	if (raiz != NULL) {
+		// Se tiver duas subárvores.
+		if (raiz->esquerda != NULL && raiz->direita != NULL){
+			No *aux = raiz;
+			pai = raiz;
+			raiz = raiz->direita;
+			while(raiz->esquerda != NULL){
+				pai = raiz;
+				raiz = raiz->esquerda;
+			}
+			aux->valor = raiz->valor;
+		}
+
+		//Se tiver uma subárvore à esquerda.
+		if (raiz->esquerda == NULL && raiz->direita != NULL){
+			if (pai->esquerda == raiz) pai->esquerda = raiz->direita;
+			else pai->direita = raiz->direita;
+		}
+		//Se tiver uma subárvore à direita.
+		else if (raiz->esquerda != NULL && raiz->direita == NULL) {
+			if (pai->esquerda == raiz) pai->esquerda = raiz->esquerda;
+			else pai->direita = raiz->esquerda;
+		}
+		//Se for uma folha.
+		else if (raiz->esquerda == NULL && raiz->direita == NULL){
+			if (pai->esquerda == raiz) pai->esquerda = NULL;
+			else pai->direita = NULL;
+		}
+		free(raiz);
+	}
 }
 
 // Função de busca (retorna o ponteiro para o nó ou NULL se não encontrar)
@@ -106,13 +149,13 @@ void menu() {
     int opcao, valor, opcao1;
 
     do {
-        printf("\nMenu:\n1. Inserir valor\n2. Buscar valor\n3. Remover valor\n4. Percorrer árvore\n0. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("\nMenu:\n1. Inserir valor\n2. Buscar valor\n3. Remover valor\n4. Percorrer arvore\n0. Sair\n");
+        printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
         switch(opcao) {
             case 0:
-                printf("Liberando memória e saindo...\n");
+                printf("Liberando memoria e saindo...\n");
                 liberarArvore(raiz);
                 raiz = NULL;
                 break;
@@ -127,29 +170,32 @@ void menu() {
                 printf("Digite um valor a ser buscado: ");
                 scanf("%d", &valor);
                 if (buscar(raiz, valor) != NULL)
-                    printf("Valor %d encontrado na árvore.\n", valor);
+                    printf("Valor %d encontrado na arvore.\n", valor);
                 else
-                    printf("Valor %d não encontrado.\n", valor);
+                    printf("Valor %d nao encontrado.\n", valor);
                 break;
 
             case 3:
                 printf("Digite o valor a ser removido: ");
                 scanf("%d", &valor);
-        
+                if (remover(raiz, valor) != NULL)
+                    printf("Valor %d removido da arvore.\n", valor);
+                else
+                    printf("Valor %d nao encontrado.\n", valor);
                 break;
 
             case 4:
                 if (raiz == NULL) {
-                    printf("Árvore vazia!\n");
+                    printf("Arvore vazia!\n");
                     break;
                 }
-                printf("\n1. Pré-ordem\n2. Em ordem\n3. Pós-ordem\n");
-                printf("Escolha uma opção: "); 
+                printf("\n1. Pre-ordem\n2. Em ordem\n3. Pos-ordem\n");
+                printf("Escolha uma opcao: "); 
                 scanf("%d", &opcao1);
 
                 switch (opcao1) {
                     case 1:
-                        printf("Pré-ordem: ");
+                        printf("Pre-ordem: ");
                         preOrdem(raiz);
                         printf("\n");
                         break;
@@ -159,18 +205,18 @@ void menu() {
                         printf("\n");
                         break;
                     case 3:
-                        printf("Pós-ordem: ");
+                        printf("Pos-ordem: ");
                         posOrdem(raiz);
                         printf("\n");
                         break;
                     default:
-                        printf("Opção de percurso inválida!\n");
+                        printf("Opcao de percurso invalida!\n");
                         break;
                 }
                 break;
 
             default:
-                printf("Opção inválida!\n");
+                printf("Opcao invalida!\n");
         }
     } while(opcao != 0);
 }
