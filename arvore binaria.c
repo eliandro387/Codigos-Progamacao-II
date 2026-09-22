@@ -172,7 +172,7 @@ void menu() {
                 if (buscar(raiz, valor) != NULL)
                     printf("Valor %d encontrado na arvore.\n", valor);
                 else
-                    printf("Valor %d nao encontrado.\n", valor);
+                    printf("Valor %d não encontrado.\n", valor);
                 break;
 
             case 3:
@@ -181,7 +181,7 @@ void menu() {
                 if (remover(raiz, valor) != NULL)
                     printf("Valor %d removido da arvore.\n", valor);
                 else
-                    printf("Valor %d nao encontrado.\n", valor);
+                    printf("Valor %d não encontrado.\n", valor);
                 break;
 
             case 4:
@@ -190,7 +190,7 @@ void menu() {
                     break;
                 }
                 printf("\n1. Pre-ordem\n2. Em ordem\n3. Pos-ordem\n");
-                printf("Escolha uma opcao: "); 
+                printf("Escolha uma opção: "); 
                 scanf("%d", &opcao1);
 
                 switch (opcao1) {
@@ -210,13 +210,13 @@ void menu() {
                         printf("\n");
                         break;
                     default:
-                        printf("Opcao de percurso invalida!\n");
+                        printf("Opção de percurso invalida!\n");
                         break;
                 }
                 break;
 
             default:
-                printf("Opcao invalida!\n");
+                printf("Opção invalida!\n");
         }
     } while(opcao != 0);
 }
