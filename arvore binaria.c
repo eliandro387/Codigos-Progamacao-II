@@ -11,6 +11,7 @@ typedef struct No {
 // Protótipos das funções
 No* criarNo(int valor);
 No* inserir(No* raiz, int valor);
+No* obterMenorNo(No* raiz);
 No* remover(No* raiz, int valor);
 No* buscar(No* raiz, int valor);
 void preOrdem(No* raiz);
@@ -48,49 +49,48 @@ No* inserir(No* raiz, int valor) {
     return raiz;
 }
 
-//Função para remover um elemento
-No* remover(No* raiz, int valor){
-    No* pai = raiz;
-	
-	while (raiz != NULL && raiz->valor != valor){
-		pai = raiz;
-		if (valor > raiz->valor) raiz = raiz->direita;
-		else raiz = raiz->esquerda;
-	}
-	
-	if (raiz != NULL) {
-		// Se tiver duas subárvores.
-		if (raiz->esquerda != NULL && raiz->direita != NULL){
-			No *aux = raiz;
-			pai = raiz;
-			raiz = raiz->direita;
-			while(raiz->esquerda != NULL){
-				pai = raiz;
-				raiz = raiz->esquerda;
-			}
-			aux->valor = raiz->valor;
-		}
-
-		//Se tiver uma subárvore à esquerda.
-		if (raiz->esquerda == NULL && raiz->direita != NULL){
-			if (pai->esquerda == raiz) pai->esquerda = raiz->direita;
-			else pai->direita = raiz->direita;
-		}
-		//Se tiver uma subárvore à direita.
-		else if (raiz->esquerda != NULL && raiz->direita == NULL) {
-			if (pai->esquerda == raiz) pai->esquerda = raiz->esquerda;
-			else pai->direita = raiz->esquerda;
-		}
-		//Se for uma folha.
-		else if (raiz->esquerda == NULL && raiz->direita == NULL){
-			if (pai->esquerda == raiz) pai->esquerda = NULL;
-			else pai->direita = NULL;
-		}
-		free(raiz);
-	}
+// Função auxiliar para encontrar o menor nó da subárvore (usado na remoção)
+No* obterMenorNo(No* raiz) {
+    No* atual = raiz;
+    while (atual && atual->esquerda != NULL) {
+        atual = atual->esquerda;
+    }
+    return atual;
 }
 
-// Função de busca (retorna o ponteiro para o nó ou NULL se não encontrar)
+// Função para remover um elemento da BST 
+No* remover(No* raiz, int valor) {
+    if (raiz == NULL) {
+        return NULL;
+    }
+
+    if (valor < raiz->valor) {
+        raiz->esquerda = remover(raiz->esquerda, valor);
+    } else if (valor > raiz->valor) {
+        raiz->direita = remover(raiz->direita, valor);
+    } else {
+        // Encontrou o nó a ser removido
+
+        // Caso 1 e 2: Sem filho à esquerda ou sem filho à direita
+        if (raiz->esquerda == NULL) {
+            No* temp = raiz->direita;
+            free(raiz);
+            return temp;
+        } else if (raiz->direita == NULL) {
+            No* temp = raiz->esquerda;
+            free(raiz);
+            return temp;
+        }
+
+        // Caso 3: Nó com 2 filhos
+        No* temp = obterMenorNo(raiz->direita);
+        raiz->valor = temp->valor;
+        raiz->direita = remover(raiz->direita, temp->valor);
+    }
+    return raiz;
+}
+
+// Função de busca
 No* buscar(No* raiz, int valor) {
     if (raiz == NULL || raiz->valor == valor) 
         return raiz;
@@ -99,11 +99,9 @@ No* buscar(No* raiz, int valor) {
     return buscar(raiz->esquerda, valor);
 }
 
-
 // IMPLEMENTAÇÃO DOS PERCURSOS
 
-
-// Percurso Pré-ordem ( Raiz -> Esquerda -> Direita)
+// Percurso Pré-ordem (Raiz -> Esquerda -> Direita)
 void preOrdem(No* raiz) {
     if (raiz != NULL) {
         printf("%d ", raiz->valor);
@@ -112,7 +110,7 @@ void preOrdem(No* raiz) {
     }
 }
 
-// Percurso Em Ordem ( Esquerda -> Raiz -> Direita)
+// Percurso Em Ordem (Esquerda -> Raiz -> Direita)
 void emOrdem(No* raiz) {
     if (raiz != NULL) {
         emOrdem(raiz->esquerda);
@@ -121,7 +119,7 @@ void emOrdem(No* raiz) {
     }
 }
 
-// Percurso Pós-ordem ( Esquerda -> Direita -> Raiz)
+// Percurso Pós-ordem (Esquerda -> Direita -> Raiz)
 void posOrdem(No* raiz) {
     if (raiz != NULL) {
         posOrdem(raiz->esquerda);
@@ -130,9 +128,7 @@ void posOrdem(No* raiz) {
     }
 }
 
-
 // LIBERAÇÃO DE MEMÓRIA (Pós-ordem)
-
 void liberarArvore(No* raiz) {
     if (raiz != NULL) {
         liberarArvore(raiz->esquerda);
@@ -141,9 +137,7 @@ void liberarArvore(No* raiz) {
     }
 }
 
-
 // MENU INTERATIVO
-
 void menu() {
     No* raiz = NULL;
     int opcao, valor, opcao1;
@@ -178,10 +172,12 @@ void menu() {
             case 3:
                 printf("Digite o valor a ser removido: ");
                 scanf("%d", &valor);
-                if (remover(raiz, valor) != NULL)
+                if (buscar(raiz, valor) != NULL) {
+                    raiz = remover(raiz, valor);
                     printf("Valor %d removido da arvore.\n", valor);
-                else
+                } else {
                     printf("Valor %d não encontrado.\n", valor);
+                }
                 break;
 
             case 4:
