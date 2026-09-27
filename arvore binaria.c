@@ -18,6 +18,10 @@ void preOrdem(No* raiz);
 void emOrdem(No* raiz);
 void posOrdem(No* raiz);
 void liberarArvore(No* raiz);
+void rotacaoSimplesDireita(No** raiz);
+void rotacaoSimplesEsquerda(No** raiz);
+void rotacaoDuplaEsquerda(No** raiz);
+void rotacaoDuplaDireita(No** raiz);
 void menu();
 
 // Função para alocar um novo nó
@@ -34,6 +38,8 @@ No* criarNo(int valor) {
 }
 
 // Função para inserir um elemento na BST
+//Fazer o balanceamento da árvore após a inserção
+//Inserir as rotações necessárias para manter a árvore balanceada
 No* inserir(No* raiz, int valor) {
     if (raiz == NULL) {
         return criarNo(valor);
@@ -59,6 +65,8 @@ No* obterMenorNo(No* raiz) {
 }
 
 // Função para remover um elemento da BST 
+//Fazer o balanceamento da árvore após a remoção
+//Inserir as rotações necessárias para manter a árvore balanceada
 No* remover(No* raiz, int valor) {
     if (raiz == NULL) {
         return NULL;
@@ -92,7 +100,7 @@ No* remover(No* raiz, int valor) {
 
 // Função de busca
 No* buscar(No* raiz, int valor) {
-    if (raiz == NULL || raiz->valor == valor) 
+    if (raiz == NULL || raiz->valor == valor)
         return raiz;
     if (valor > raiz->valor)
         return buscar(raiz->direita, valor);
@@ -137,13 +145,41 @@ void liberarArvore(No* raiz) {
     }
 }
 
+//Função para calcular a altura da árvore e o fator de balanceamento de cada nó
+/*insere o código aqui*/
+
+//função para as rotações
+void rotacaoSimplesDireita(No** raiz) {
+    No* novaRaiz = (*raiz)->esquerda;
+    (*raiz)->esquerda = novaRaiz->direita;
+    novaRaiz->direita = *raiz;
+    *raiz = novaRaiz;
+}
+
+void rotacaoSimplesEsquerda(No** raiz) {
+    No* novaRaiz = (*raiz)->direita;
+    (*raiz)->direita = novaRaiz->esquerda;
+    novaRaiz->esquerda = *raiz;
+    *raiz = novaRaiz;
+}
+
+void rotacaoDuplaEsquerda(No** raiz) {
+    rotacaoSimplesDireita(&((*raiz)->direita));
+    rotacaoSimplesEsquerda(raiz);
+}
+
+void rotacaoDuplaDireita(No** raiz) {
+    rotacaoSimplesEsquerda(&((*raiz)->esquerda));
+    rotacaoSimplesDireita(raiz);
+}
+
 // MENU INTERATIVO
 void menu() {
     No* raiz = NULL;
     int opcao, valor, opcao1;
 
     do {
-        printf("\nMenu:\n1. Inserir valor\n2. Buscar valor\n3. Remover valor\n4. Percorrer arvore\n0. Sair\n");
+        printf("\nMenu:\n1. Inserir valor\n2. Buscar valor\n3. Remover valor\n4. Percorrer arvore\n5.Exibir altura e fator de balanceamento\n0. Sair\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
@@ -208,6 +244,17 @@ void menu() {
                     default:
                         printf("Opção de percurso invalida!\n");
                         break;
+                }
+                break;
+
+                case 5:
+                if (raiz == NULL) {
+                    printf("Arvore vazia!\n");
+                    break;
+                }
+                else {
+                    printf("Altura da arvore: ");
+                    printf("Fator de balanceamento de cada nó:\n");
                 }
                 break;
 
