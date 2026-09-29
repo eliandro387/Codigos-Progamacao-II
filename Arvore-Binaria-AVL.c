@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <locale.h>
 
+// Estrutura do Nó da Árvore AVL
 typedef struct No {
     int valor;
     int altura;
@@ -14,8 +15,13 @@ int obterAltura(No* n);
 int maior(int a, int b);
 int obterFatorBalanceamento(No* n);
 No* criarNo(int valor);
+
+// Funções de Rotação (Simples e Duplas)
 No* rotacaoDireita(No* y);
 No* rotacaoEsquerda(No* x);
+No* rotacaoEsquerdaDireita(No* no);
+No* rotacaoDireitaEsquerda(No* no);
+
 No* rebalancear(No* no);
 No* inserir(No* raiz, int valor);
 No* obterMenorNo(No* raiz);
@@ -34,7 +40,7 @@ int obterAltura(No* n) {
     return n->altura;
 }
 
-// Retorna o maior valor
+// Retorna o maior valor entre dois inteiros
 int maior(int a, int b) {
     return (a > b) ? a : b;
 }
@@ -45,7 +51,7 @@ int obterFatorBalanceamento(No* n) {
     return obterAltura(n->esquerda) - obterAltura(n->direita);
 }
 
-// Função para alocar um novo nó
+// Função para alocar dinamicamente um novo nó
 No* criarNo(int valor) {
     No* novoNo = (No*)malloc(sizeof(No));
     if (novoNo == NULL) {
@@ -59,7 +65,7 @@ No* criarNo(int valor) {
     return novoNo;
 }
 
-// Rotação Simples à Direita
+// 1. Rotação Simples à Direita
 No* rotacaoDireita(No* y) {
     No* x = y->esquerda;
     No* T2 = x->direita;
@@ -73,7 +79,7 @@ No* rotacaoDireita(No* y) {
     return x;
 }
 
-// Rotação Simples à Esquerda
+// 2. Rotação Simples à Esquerda
 No* rotacaoEsquerda(No* x) {
     No* y = x->direita;
     No* T2 = y->esquerda;
@@ -87,7 +93,19 @@ No* rotacaoEsquerda(No* x) {
     return y;
 }
 
-// Função auxiliar para rebalancear o nó
+// 3. Rotação Dupla Esquerda-Direita
+No* rotacaoEsquerdaDireita(No* no) {
+    no->esquerda = rotacaoEsquerda(no->esquerda);
+    return rotacaoDireita(no);
+}
+
+// 4. Rotação Dupla Direita-Esquerda
+No* rotacaoDireitaEsquerda(No* no) {
+    no->direita = rotacaoDireita(no->direita);
+    return rotacaoEsquerda(no);
+}
+
+// Rebalanceamento da Árvore AVL
 No* rebalancear(No* no) {
     if (no == NULL) return NULL;
 
@@ -97,21 +115,23 @@ No* rebalancear(No* no) {
     // 2. Verificar Fator de Balanceamento
     int fb = obterFatorBalanceamento(no);
 
-    // Caso Pensa para a Esquerda
+    // Caso Pensa para a Esquerda (FB > 1)
     if (fb > 1) {
         if (obterFatorBalanceamento(no->esquerda) < 0) {
-            // Rotação Dupla Esquerda-Direita
-            no->esquerda = rotacaoEsquerda(no->esquerda);
+            // Caso Esquerda-Direita (LR)
+            return rotacaoEsquerdaDireita(no);
         }
+        // Caso Esquerda-Esquerda (LL)
         return rotacaoDireita(no);
     }
 
-    // Caso Pensa para a Direita
+    // Caso Pensa para a Direita (FB < -1)
     if (fb < -1) {
         if (obterFatorBalanceamento(no->direita) > 0) {
-            // Rotação Dupla Direita-Esquerda
-            no->direita = rotacaoDireita(no->direita);
+            // Caso Direita-Esquerda (RL)
+            return rotacaoDireitaEsquerda(no);
         }
+        // Caso Direita-Direita (RR)
         return rotacaoEsquerda(no);
     }
 
@@ -133,11 +153,11 @@ No* inserir(No* raiz, int valor) {
         return raiz;
     }
 
-    // Rebalanceia a árvore no caminho de volta
+    // Rebalanceia no caminho de volta
     return rebalancear(raiz);
 }
 
-// Encontra o menor nó da subárvore direita (sucessor)
+// Encontra o menor nó da subárvore direita (sucessor in-order)
 No* obterMenorNo(No* raiz) {
     No* atual = raiz;
     while (atual && atual->esquerda != NULL) {
@@ -162,16 +182,16 @@ No* remover(No* raiz, int valor) {
             No* temp = raiz->esquerda ? raiz->esquerda : raiz->direita;
 
             if (temp == NULL) {
-                // Caso folha
+                // Caso Nó Folha
                 temp = raiz;
                 raiz = NULL;
             } else {
-                // Caso 1 filho
+                // Caso 1 Filho
                 *raiz = *temp;
             }
             free(temp);
         } else {
-            // Caso 3: Nó com 2 filhos
+            // Caso 3: Nó com 2 Filhos
             No* temp = obterMenorNo(raiz->direita);
             raiz->valor = temp->valor;
             raiz->direita = remover(raiz->direita, temp->valor);
@@ -180,7 +200,7 @@ No* remover(No* raiz, int valor) {
 
     if (raiz == NULL) return NULL;
 
-    // Rebalanceia a árvore após a remoção
+    // Rebalanceia após a remoção
     return rebalancear(raiz);
 }
 
@@ -218,7 +238,7 @@ void posOrdem(No* raiz) {
     }
 }
 
-// Exibe a altura e o fator de balanceamento de cada nó (Opção 5)
+// Exibe a altura e o fator de balanceamento de cada nó 
 void exibirEstadoAVL(No* raiz) {
     if (raiz != NULL) {
         exibirEstadoAVL(raiz->esquerda); 
@@ -236,7 +256,7 @@ void liberarArvore(No* raiz) {
     }
 }
 
-// MENU INTERATIVO
+// MENU INTERATIVO 
 void menu() {
     No* raiz = NULL;
     int opcao, valor, opcao1;
