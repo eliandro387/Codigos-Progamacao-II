@@ -37,9 +37,6 @@ No* criarNo(int valor) {
     return novoNo;
 }
 
-// Função para inserir um elemento na BST
-//Fazer o balanceamento da árvore após a inserção
-//Inserir as rotações necessárias para manter a árvore balanceada
 No* inserir(No* raiz, int valor) {
     if (raiz == NULL) {
         return criarNo(valor);
@@ -64,9 +61,6 @@ No* obterMenorNo(No* raiz) {
     return atual;
 }
 
-// Função para remover um elemento da BST 
-//Fazer o balanceamento da árvore após a remoção
-//Inserir as rotações necessárias para manter a árvore balanceada
 No* remover(No* raiz, int valor) {
     if (raiz == NULL) {
         return NULL;
@@ -78,7 +72,6 @@ No* remover(No* raiz, int valor) {
         raiz->direita = remover(raiz->direita, valor);
     } else {
         // Encontrou o nó a ser removido
-
         // Caso 1 e 2: Sem filho à esquerda ou sem filho à direita
         if (raiz->esquerda == NULL) {
             No* temp = raiz->direita;
@@ -144,9 +137,6 @@ void liberarArvore(No* raiz) {
         free(raiz);
     }
 }
-
-//Função para calcular a altura da árvore e o fator de balanceamento de cada nó
-/*insere o código aqui*/
 
 //função para as rotações
 void rotacaoSimplesDireita(No** raiz) {
