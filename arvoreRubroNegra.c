@@ -197,7 +197,6 @@ void inserir(Arvore* t, int valor) {
 
 // Encontra o menor nó da subárvore direita
 No* obterMenorNo(Arvore* t, No* n) {
-    No* atual = t->raiz;
     while (n->esquerda != t->nil){
         n = n->esquerda;
     }
