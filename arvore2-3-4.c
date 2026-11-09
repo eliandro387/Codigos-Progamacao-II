@@ -22,19 +22,19 @@ typedef struct {
 } Arvore;
 
 // Protótipos
+// Protótipos Corrigidos
 Arvore* criarArvore();
 No* criarNo(int folha);
 void dividirFilho(No* pai, int i);
 void inserir(Arvore* t, int valor);
 No* buscar(No* atual, int valor);
-No* obterMenorNo(Arvore* t, No* n);
-void remover(Arvore* t, No* z);
 void emOrdem(No* n);
 void exibirPorNiveis(No* n);
-int obterAltura(Arvore* t, No* n);
-void liberarNos(Arvore* t, No* n);
+int obterAltura(No* n);
+void liberarNos(No* n);
 void liberarArvore(Arvore* t);
 void menu();
+void removerDaArvore(Arvore* t, int valor);
 // Funções auxiliares para remoção na Árvore 2-3-4
 void removerNo(No* atual, int valor);
 void removerDeFolha(No* atual, int idx);
@@ -467,7 +467,7 @@ void menu() {
                     break;
                 }
                 printf("Em ordem: ");
-                emOrdem(t, t->raiz);
+                emOrdem(t->raiz);
                 printf("\n");
                 break;
 
