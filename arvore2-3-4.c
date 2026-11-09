@@ -24,12 +24,13 @@ typedef struct {
 // Protótipos
 Arvore* criarArvore();
 No* criarNo(int folha);
-void dividirFilho(No* pai, int i)
+void dividirFilho(No* pai, int i);
 void inserir(Arvore* t, int valor);
-No* buscar(No* n, int valor);
+No* buscar(No* atual, int valor);
 No* obterMenorNo(Arvore* t, No* n);
 void remover(Arvore* t, No* z);
 void emOrdem(No* n);
+void exibirPorNiveis(No* n);
 int obterAltura(Arvore* t, No* n);
 void liberarNos(Arvore* t, No* n);
 void liberarArvore(Arvore* t);
@@ -96,8 +97,9 @@ void dividirFilho(No* pai, int i){
 }
 
 void inserir(Arvore* t, int valor) {
-// Valores repetidos são ignorados (checa antes para não alterar a árvore à toa)
-    if (buscar(t->raiz, valor)) {
+    // Valores repetidos são ignorados
+    // OBSERVAÇÃO: Corrigida a chamada da busca para passar t->raiz
+    if (buscar(t->raiz, valor) != NULL) {
         printf("Valor %d já existe na árvore. Ignorado.\n", valor);
         return;
     }
@@ -109,14 +111,13 @@ void inserir(Arvore* t, int valor) {
         return;
     }
  
-    // Raiz cheia: surge uma nova raiz
     if (t->raiz->n == 3) {
         No* nova = criarNo(0);
         nova->filhos[0] = t->raiz;
         t->raiz = nova;
         dividirFilho(nova, 0);
     }
- //descida da árvore até a folha, dividindo antecipadamente qualquer nó cheio que aparecer no caminho.
+    
     No* atual = t->raiz;
     while (!atual->folha) {
         int i = 0;
@@ -128,7 +129,6 @@ void inserir(Arvore* t, int valor) {
         atual = atual->filhos[i];
     }
  
-    // insere ordenado na folha (que tem no máximo 2 chaves aqui)
     int i = atual->n - 1;
     while (i >= 0 && atual->chaves[i] > valor) {
         atual->chaves[i + 1] = atual->chaves[i];
@@ -136,14 +136,6 @@ void inserir(Arvore* t, int valor) {
     }
     atual->chaves[i + 1] = valor;
     atual->n++;
-}
-
-// Encontra o menor nó da subárvore direita
-No* obterMenorNo(Arvore* t, No* n) {
-    while (n->esquerda != t->nil){
-        n = n->esquerda;
-    }
-    return n;
 }
 
 /*Remover a chave mantendo todas as folhas no mesmo nível, emprestando chave de um irmão 
@@ -187,22 +179,79 @@ void remover(Arvore* t, No* z) {
 }
 
 // Função de busca
-No* buscar(Arvore* t, int valor) {
-    No* atual = t->raiz;
-    while (atual != t->nil && atual->valor != valor) {
-        atual = (valor < atual->valor) ? atual->esquerda : atual->direita;
+No* buscar(No* atual, int valor) {
+    if (atual == NULL) return NULL;
+    
+    int i = 0;
+    while (i < atual->n && valor > atual->chaves[i]) {
+        i++;
     }
-    return atual;
+    
+    // Se encontrou a chave neste nó
+    if (i < atual->n && valor == atual->chaves[i]) {
+        return atual;
+    }
+    
+    // Se for folha e não encontrou, o valor não existe
+    if (atual->folha) {
+        return NULL;
+    }
+    
+    // Desce para o filho apropriado
+    return buscar(atual->filhos[i], valor);
 }
 
 //Só pede um percurso
-void emOrdem(Arvore* t, No* n) {
+void emOrdem(No* n) {
     if (n == NULL) return;
     for (int i = 0; i < n->n; i++) {
         if (!n->folha) emOrdem(n->filhos[i]);
         printf("%d ", n->chaves[i]);
     }
     if (!n->folha) emOrdem(n->filhos[n->n]);
+}
+  
+void exibirPorNiveis(No* raiz) {
+    if (raiz == NULL) {
+        printf("Árvore vazia!\n");
+        return;
+    }
+    
+    // Fila simples implementada com vetor
+    No* fila[1000]; 
+    int inicio = 0, fim = 0;
+    
+    fila[fim++] = raiz;
+    int nivel = 0;
+    
+    while (inicio < fim) {
+        int tamanhoNivel = fim - inicio;
+        printf("Nível %d: ", nivel);
+        
+        while (tamanhoNivel > 0) {
+            No* atual = fila[inicio++];
+            
+            // Imprime as chaves do nó atual
+            printf("[");
+            for (int i = 0; i < atual->n; i++) {
+                printf("%d", atual->chaves[i]);
+                if (i < atual->n - 1) printf(",");
+            }
+            printf("] ");
+            
+            // Adiciona filhos na fila
+            if (!atual->folha) {
+                for (int i = 0; i <= atual->n; i++) {
+                    if (atual->filhos[i] != NULL) {
+                        fila[fim++] = atual->filhos[i];
+                    }
+                }
+            }
+            tamanhoNivel--;
+        }
+        printf("\n");
+        nivel++;
+    }
 }
 
 // Altura  = número de níveis (todas as folhas estão no mesmo nível)
@@ -257,7 +306,7 @@ void menu() {
             case 2:
                 printf("Digite um valor a ser buscado: ");
                 scanf("%d", &valor);
-                if (buscar(t, valor) != t->nil)
+                if (buscar(t, valor) != NULL)
                     printf("Valor %d encontrado na árvore.\n", valor);
                 else
                     printf("Valor %d não encontrado.\n", valor);
@@ -276,7 +325,7 @@ void menu() {
                 break;
 
             case 4:
-                if (t->raiz == t->nil) {
+                if (t->raiz == NULL) {
                     printf("Árvore vazia!\n");
                     break;
                 }
@@ -285,9 +334,9 @@ void menu() {
                 printf("\n");
                 break;
 
-            case 5:
-            /*Exibição por níveis. 
-            Exibir a árvore nível a nível, mostrando as chaves de cada nó, para que seja possível verificar que todas as folhas permanecem no mesmo nível após cada operação.*/
+           case 5:
+                // OBSERVAÇÃO: Chamada da nova função criada
+                exibirPorNiveis(t->raiz);
                 break;
 
             default:
