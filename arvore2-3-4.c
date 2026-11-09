@@ -35,6 +35,16 @@ int obterAltura(Arvore* t, No* n);
 void liberarNos(Arvore* t, No* n);
 void liberarArvore(Arvore* t);
 void menu();
+// Funções auxiliares para remoção na Árvore 2-3-4
+void removerNo(No* atual, int valor);
+void removerDeFolha(No* atual, int idx);
+void removerDeNaoFolha(No* atual, int idx);
+int obterPredecessor(No* atual, int idx);
+int obterSucessor(No* atual, int idx);
+void preencher(No* atual, int idx);
+void pegarEmprestadoAnterior(No* atual, int idx);
+void pegarEmprestadoProximo(No* atual, int idx);
+void fundir(No* atual, int idx);
 
 // Retorna o maior valor entre dois inteiros
 int maior(int a, int b) {
@@ -140,42 +150,169 @@ void inserir(Arvore* t, int valor) {
 
 /*Remover a chave mantendo todas as folhas no mesmo nível, emprestando chave de um irmão 
 ou fundindo nós quando um nó ficar com chaves insuficientes.*/
-void remover(Arvore* t, No* z) {
-    No* y = z;
-    No* x;
-    Cor corOriginal = y->cor;
+void removerDaArvore(Arvore* t, int valor) {
+    if (!t->raiz) {
+        printf("A árvore está vazia.\n");
+        return;
+    }
+    removerNo(t->raiz, valor);
 
-    if (z->esquerda == t->nil) {
-        x = z->direita;
-        transplantar(t, z, z->direita);
-    } else if (z->direita == t->nil) {
-        x = z->esquerda;
-        transplantar(t, z, z->esquerda);
+    // Se a raiz ficar vazia após a remoção
+    if (t->raiz->n == 0) {
+        No* tmp = t->raiz;
+        if (t->raiz->folha)
+            t->raiz = NULL;
+        else
+            t->raiz = t->raiz->filhos[0];
+        free(tmp);
+    }
+}
+
+int encontrarChave(No* atual, int valor) {
+    int idx = 0;
+    while (idx < atual->n && atual->chaves[idx] < valor)
+        ++idx;
+    return idx;
+}
+
+void removerNo(No* atual, int valor) {
+    int idx = encontrarChave(atual, valor);
+
+    if (idx < atual->n && atual->chaves[idx] == valor) {
+        if (atual->folha)
+            removerDeFolha(atual, idx);
+        else
+            removerDeNaoFolha(atual, idx);
     } else {
-        // Nó com 2 filhos: usa o sucessor in-order
-        y = obterMenorNo(t, z->direita);
-        corOriginal = y->cor;
-        x = y->direita;
-
-        if (y->pai == z) {
-            x->pai = y;
-        } else {
-            transplantar(t, y, y->direita);
-            y->direita = z->direita;
-            y->direita->pai = y;
+        if (atual->folha) {
+            printf("O valor %d não está na árvore.\n", valor);
+            return;
         }
-        transplantar(t, z, y);
-        y->esquerda = z->esquerda;
-        y->esquerda->pai = y;
-        y->cor = z->cor;
+        int flag = ((idx == atual->n) ? 1 : 0);
+        if (atual->filhos[idx]->n < 2)
+            preencher(atual, idx);
+        
+        if (flag && idx > atual->n)
+            removerNo(atual->filhos[idx - 1], valor);
+        else
+            removerNo(atual->filhos[idx], valor);
     }
-    free(z);
+}
 
-    // Só há violação se o nó removido/movido era preto
-    if (corOriginal == PRETO) {
-        removerCorrecao(t, x);
+void removerDeFolha(No* atual, int idx) {
+    for (int i = idx + 1; i < atual->n; ++i)
+        atual->chaves[i - 1] = atual->chaves[i];
+    atual->n--;
+}
+
+void removerDeNaoFolha(No* atual, int idx) {
+    int valor = atual->chaves[idx];
+    if (atual->filhos[idx]->n >= 2) {
+        int pred = obterPredecessor(atual, idx);
+        atual->chaves[idx] = pred;
+        removerNo(atual->filhos[idx], pred);
+    } else if (atual->filhos[idx + 1]->n >= 2) {
+        int suc = obterSucessor(atual, idx);
+        atual->chaves[idx] = suc;
+        removerNo(atual->filhos[idx + 1], suc);
+    } else {
+        fundir(atual, idx);
+        removerNo(atual->filhos[idx], valor);
     }
-    t->nil->pai = t->nil; // mantém o sentinela limpo
+}
+
+int obterPredecessor(No* atual, int idx) {
+    No* cur = atual->filhos[idx];
+    while (!cur->folha)
+        cur = cur->filhos[cur->n];
+    return cur->chaves[cur->n - 1];
+}
+
+int obterSucessor(No* atual, int idx) {
+    No* cur = atual->filhos[idx + 1];
+    while (!cur->folha)
+        cur = cur->filhos[0];
+    return cur->chaves[0];
+}
+
+void preencher(No* atual, int idx) {
+    if (idx != 0 && atual->filhos[idx - 1]->n >= 2)
+        pegarEmprestadoAnterior(atual, idx);
+    else if (idx != atual->n && atual->filhos[idx + 1]->n >= 2)
+        pegarEmprestadoProximo(atual, idx);
+    else {
+        if (idx != atual->n)
+            fundir(atual, idx);
+        else
+            fundir(atual, idx - 1);
+    }
+}
+
+void pegarEmprestadoAnterior(No* atual, int idx) {
+    No* filho = atual->filhos[idx];
+    No* irmao = atual->filhos[idx - 1];
+
+    for (int i = filho->n - 1; i >= 0; --i)
+        filho->chaves[i + 1] = filho->chaves[i];
+
+    if (!filho->folha) {
+        for (int i = filho->n; i >= 0; --i)
+            filho->filhos[i + 1] = filho->filhos[i];
+    }
+
+    filho->chaves[0] = atual->chaves[idx - 1];
+    if (!filho->folha)
+        filho->filhos[0] = irmao->filhos[irmao->n];
+
+    atual->chaves[idx - 1] = irmao->chaves[irmao->n - 1];
+    filho->n += 1;
+    irmao->n -= 1;
+}
+
+void pegarEmprestadoProximo(No* atual, int idx) {
+    No* filho = atual->filhos[idx];
+    No* irmao = atual->filhos[idx + 1];
+
+    filho->chaves[filho->n] = atual->chaves[idx];
+    if (!filho->folha)
+        filho->filhos[filho->n + 1] = irmao->filhos[0];
+
+    atual->chaves[idx] = irmao->chaves[0];
+
+    for (int i = 1; i < irmao->n; ++i)
+        irmao->chaves[i - 1] = irmao->chaves[i];
+
+    if (!irmao->folha) {
+        for (int i = 1; i <= irmao->n; ++i)
+            irmao->filhos[i - 1] = irmao->filhos[i];
+    }
+    filho->n += 1;
+    irmao->n -= 1;
+}
+
+void fundir(No* atual, int idx) {
+    No* filho = atual->filhos[idx];
+    No* irmao = atual->filhos[idx + 1];
+
+    filho->chaves[1] = atual->chaves[idx];
+
+    for (int i = 0; i < irmao->n; ++i)
+        filho->chaves[i + 2] = irmao->chaves[i];
+
+    if (!filho->folha) {
+        for (int i = 0; i <= irmao->n; ++i)
+            filho->filhos[i + 2] = irmao->filhos[i];
+    }
+
+    for (int i = idx + 1; i < atual->n; ++i)
+        atual->chaves[i - 1] = atual->chaves[i];
+
+    for (int i = idx + 2; i <= atual->n; ++i)
+        atual->filhos[i - 1] = atual->filhos[i];
+
+    filho->n += irmao->n + 1;
+    atual->n--;
+    free(irmao);
 }
 
 // Função de busca
@@ -312,12 +449,12 @@ void menu() {
                     printf("Valor %d não encontrado.\n", valor);
                 break;
 
-            case 3:
+           case 3:
                 printf("Digite o valor a ser removido: ");
                 scanf("%d", &valor);
-                No* alvo = buscar(t, valor);
-                if (alvo != t->nil) {
-                    remover(t, alvo);
+                // OBSERVAÇÃO: Função reescrita para fazer a remoção correta B-Tree
+                if (buscar(t->raiz, valor) != NULL) {
+                    removerDaArvore(t, valor);
                     printf("Valor %d removido da árvore.\n", valor);
                 } else {
                     printf("Valor %d não encontrado.\n", valor);
