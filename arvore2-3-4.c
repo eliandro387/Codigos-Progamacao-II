@@ -306,7 +306,7 @@ void menu() {
             case 2:
                 printf("Digite um valor a ser buscado: ");
                 scanf("%d", &valor);
-                if (buscar(t, valor) != NULL)
+                if (buscar(t->raiz, valor) != NULL)
                     printf("Valor %d encontrado na árvore.\n", valor);
                 else
                     printf("Valor %d não encontrado.\n", valor);
