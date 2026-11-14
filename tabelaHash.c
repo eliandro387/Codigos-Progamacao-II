@@ -86,7 +86,7 @@ void remover(TabelaHash* t, int chave){
 
 void imprimir(TabelaHash* t){
     for(int i = 0; i <TAM; i++){
-        printf("[&2d]", i);
+        printf("[%2d]", i);
         for(No* p = t->pos[i]; p != NULL; p = p->prox)
             printf("%d -> ", p->chave);
         printf("NULL\n");
