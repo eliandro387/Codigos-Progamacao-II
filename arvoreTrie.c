@@ -10,8 +10,8 @@
 #define ALFABETO 26
 #define MAX_PALAVRA 64
 
-typedef struct No {
-    struct No *filhos[ALFABETO]; //uma posição por letra 
+typedef struct no {
+    struct no *filhos[ALFABETO]; //uma posição por letra 
     int fim;                     //1 se o caminho da raiz até aqui é uma palavra 
 } No;
 
